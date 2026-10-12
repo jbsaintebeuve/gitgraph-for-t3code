@@ -1,0 +1,48 @@
+{
+  "name": "gitgraph-for-t3code",
+  "version": "0.1.0",
+  "description": "Git Graph-style commit graph viewer for T3 Code, served locally and shown in T3's Preview panel.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "gitgraph": "bin/gitgraph.js",
+    "gitgraph-mcp": "bin/gitgraph-mcp.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:server": "tsx watch src/server/cli.ts --repo .",
+    "dev:web": "vite",
+    "build": "npm run build:web && npm run build:server",
+    "build:web": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.web.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run",
+    "pack:check": "npm pack --dry-run",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.4",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "hono": "^4.13.13",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}
