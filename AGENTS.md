@@ -68,6 +68,6 @@ un avertissement au démarrage, ou le Preview ne s'ouvre plus.
 
 ## Conventions
 
-- Code et commentaires en anglais ; README et docs utilisateur en français.
+- Code, commentaires et README en anglais ; docs utilisateur (`docs/`) en français.
 - Commits courts, au présent, un sujet par commit.
 - Mettre à jour le README quand une commande ou une option change.

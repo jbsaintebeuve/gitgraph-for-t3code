@@ -2,47 +2,51 @@
 
 # gitGraph for T3Code
 
-*A Git Graph–style commit graph served locally and shown in T3 Code's Preview panel. Works on macOS and Ubuntu.*
+[![CI](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/ci.yml/badge.svg)](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/ci.yml)
+[![T3 Code compatibility](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/t3-compat.yml/badge.svg)](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/t3-compat.yml)
+[![Secret scan](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/secrets.yml/badge.svg)](https://github.com/jbsaintebeuve/gitgraph-for-t3code/actions/workflows/secrets.yml)
 
-Visualiseur de graphe Git (façon extension « Git Graph ») pour [T3 Code](https://t3.codes) : un petit serveur
-Node local, affiché dans le panneau **Preview** de T3. Il vit hors de l'application T3 et survit donc à ses mises à jour.
+Browse your branches, inspect diffs and compare two commits in the Preview panel of [T3 Code](https://t3.codes).
 
-## Captures d'écran
+<img src="assets/demo.webp" width="100%" alt="Animated demo: the commit graph draws itself; clicking a commit opens its changed files and diff; Cmd-click compares two commits; a new merge commit appears live; the Git Graph action opens the graph in T3 Code's Preview; gitgraph init and gitgraph run in a terminal.">
 
-> À ajouter : `docs/screenshots/graph.png`, `docs/screenshots/details.png`, `docs/screenshots/compare.png`.
+`gitgraph` is a companion app. Its Node.js server runs on your machine and does not depend on T3 Code updates. It works on macOS and Ubuntu, with **Node.js ≥ 20** and **Git**. Git ≥ 2.34 is recommended.
 
 ## Installation
 
-Prérequis : **Node.js ≥ 20** et **git** (≥ 2.34 recommandé).
-
-### macOS
+With Node.js and Git installed:
 
 ```sh
-brew install node git            # ou nvm
-git clone <url-du-depot> ~/code/gitgraph-for-t3code
-cd ~/code/gitgraph-for-t3code
-npm install                      # installe et compile (script prepare)
-npm link                         # met `gitgraph` dans le PATH
-```
-
-### Ubuntu
-
-Node ≥ 20 n'est pas dans les dépôts d'Ubuntu 22.04. Deux options : **nvm** (recommandé, aucun `sudo`) ou NodeSource.
-
-```sh
-sudo apt install -y git curl
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash   # vérifier la version sur le site de nvm
-# rouvrir le terminal
-nvm install 22
-
-git clone <url-du-depot> ~/code/gitgraph-for-t3code
+git clone https://github.com/jbsaintebeuve/gitgraph-for-t3code.git ~/code/gitgraph-for-t3code
 cd ~/code/gitgraph-for-t3code
 npm install
 npm link
 ```
 
-Avec nvm, le préfixe npm global est dans votre `$HOME` : `npm link` fonctionne sans `sudo`. Avec un Node système, ne
-lancez **pas** `sudo npm link` : définissez plutôt un préfixe utilisateur :
+`npm install` builds the app. `npm link` puts the `gitgraph` and `gitgraph-mcp` commands on your `PATH`.
+
+<details>
+<summary>Install Node.js and Git on macOS or Ubuntu</summary>
+
+### Prerequisites on macOS
+
+```sh
+brew install node git            # or nvm
+```
+
+### Prerequisites on Ubuntu
+
+Node ≥ 20 is not in the Ubuntu 22.04 repositories. You can install Node.js with **nvm**, without `sudo`.
+
+```sh
+sudo apt install -y git curl
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash   # check the version on the nvm website
+# reopen the terminal
+nvm install 22
+```
+
+With nvm, the global npm prefix is in your `$HOME`, so `npm link` works without `sudo`. With a system Node, do
+**not** run `sudo npm link`. Set a user prefix instead:
 
 ```sh
 npm config set prefix ~/.local
@@ -50,38 +54,38 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
 npm link
 ```
 
-Vérification : `gitgraph --version` puis `gitgraph doctor`.
+Check with `gitgraph --version`, then `gitgraph doctor`.
 
-## Utilisation
+</details>
+
+## Getting started
+
+In the repository you want to explore:
 
 ```sh
-cd /chemin/vers/un/depot
-gitgraph init          # crée ou fusionne t3.json avec le script « Git Graph » (idempotent)
-gitgraph               # ou : sert le graphe sans passer par T3, sur http://127.0.0.1:4777
+cd /path/to/repo
+gitgraph init
+gitgraph
 ```
 
-| Commande | Rôle |
-| --- | --- |
-| `gitgraph [--repo <dir>] [--port <n>]` | sert l'interface (défaut : dépôt `.`, port 4777 ou `$GITGRAPH_PORT`) |
-| `gitgraph init [--global-snippet]` | ajoute le script à `t3.json` ; avec `--global-snippet`, affiche le JSON pour les réglages T3 |
-| `gitgraph doctor` | diagnostic : Node, git, port, permissions, stratégie de surveillance, PATH, `t3.json` (code 1 si échec) |
-| `gitgraph --version`, `gitgraph help` | version, aide |
+`gitgraph init` adds the **Git Graph** action to `t3.json`. `gitgraph` starts the server. Open [http://127.0.0.1:4777](http://127.0.0.1:4777) in a browser to see the graph, or import the action into T3 Code with the steps below. Keep the process running while you use it.
 
-### Dans T3 Code
+## Open the graph in T3 Code
 
-1. `gitgraph init` dans le projet (ou ajouter le script à la main, voir ci-dessous).
-2. Importer le script dans T3, une fois par projet (T3 n'active pas `t3.json` automatiquement). Dans la version actuelle, les scripts s'appellent des **actions** :
-   - **Réglages → Projects →** le projet → bouton **Import scripts** → menu **« Import from t3.json »** → **Git Graph** ;
-   - ou, en haut d'un fil de discussion du projet, le menu du bouton **+ (Add action)** → section **« From t3.json »** → **Git Graph**.
+1. Run `gitgraph init` in the project (or add the script by hand, see below).
+2. Import the script into T3, once per project (T3 does not enable `t3.json` automatically). In the current version, scripts are called **actions**:
+   - **Settings → Projects →** the project → **Import scripts** button → **"Import from t3.json"** menu → **Git Graph**;
+   - or, at the top of a thread in the project, the **+ (Add action)** button menu → **"From t3.json"** section → **Git Graph**.
 
-   Ces entrées n'apparaissent que si le `t3.json` est à la racine du dossier du projet ouvert dans T3, est valide, et contient des scripts pas encore importés.
-3. Lancer **Git Graph** : le graphe s'ouvre dans le panneau Preview (`autoOpenPreview`).
+   These entries only appear if `t3.json` is at the root of the project folder open in T3, is valid, and contains scripts that are not imported yet.
+3. Run **Git Graph**: the graph opens in the Preview panel (`autoOpenPreview`).
 
-Un **seul serveur partagé** écoute sur `127.0.0.1:4777` pour tous les projets : un second `gitgraph` lancé depuis
-un autre projet enregistre son dépôt auprès du serveur existant et reste en attente pour prendre le relais si celui-ci
-s'arrête. Le sélecteur de dépôt de la barre d'outils permet de passer d'un projet à l'autre.
+A **single shared server** listens on `127.0.0.1:4777` for all projects. A second `gitgraph` started from another
+project registers its repository with the running server, then waits to take over if that server stops. The
+repository picker in the toolbar switches between projects.
 
-Script `t3.json` produit par `gitgraph init` :
+<details>
+<summary>t3.json script written by gitgraph init</summary>
 
 ```json
 {
@@ -93,77 +97,93 @@ Script `t3.json` produit par `gitgraph init` :
 }
 ```
 
-### Configuration globale (tous les projets)
+</details>
 
-`gitgraph init --global-snippet` affiche l'entrée à coller sous `defaultProjectScripts` dans les réglages de T3
-(schéma exact, précédence et limites : [docs/t3-settings.md](docs/t3-settings.md)). Notes :
+### Global configuration (all projects)
 
-- `previewUrl` n'est honoré que par le **build desktop** de T3.
-- Un projet qui a déjà ses propres scripts n'hérite pas des scripts par défaut.
-- Ce dépôt ne modifie jamais les réglages de T3 : l'édition est manuelle. Chemin du fichier : `~/.t3/userdata/settings.json` sur ce Mac (nightly); sur Ubuntu, il dépend de l'installation, à vérifier.
-- Le schéma change entre les nightlies de T3 : revérifier si cela cesse de fonctionner.
+`gitgraph init --global-snippet` prints the entry to paste under `defaultProjectScripts` in T3's settings
+(exact schema, precedence and limits: [docs/t3-settings.md](docs/t3-settings.md), in French). Notes:
 
-## Fonctionnalités
+- Only the T3 **desktop build** honours `previewUrl`.
+- A project that already has its own scripts does not inherit the default scripts.
+- This repository never modifies T3's settings: you edit them by hand. The file is `~/.t3/userdata/settings.json` on this Mac (nightly). On Ubuntu, it depends on the installation; check it.
+- The schema changes between T3 nightlies: check again if it stops working.
 
-- Graphe des commits (branches, merges, tags, stashes, branches distantes), ordre et « first parent » configurables.
-- Détails d'un commit : fichiers modifiés, diff.
-- Comparaison de deux commits (Cmd/Ctrl + clic).
-- Recherche dans les commits.
-- Liste d'actions Git sur commits, branches, tags, stashes et changements non commités (menu contextuel), fetch.
-- Rafraîchissement en direct (événements serveur) quand le dépôt change.
+## Features
 
-## Raccourcis clavier
+- Commit graph (branches, merges, tags, stashes, remote branches), with configurable order and "first parent" mode.
+- Commit details: changed files, diff.
+- Comparison of two commits (Cmd/Ctrl + click).
+- Commit search.
+- Git actions on commits, branches, tags, stashes and uncommitted changes (context menu), and fetch.
+- Live refresh (server-sent events) when the repository changes.
+- T3's internal checkpoints (`refs/t3/**`) are excluded from the graph.
 
-| Touche | Action |
-| --- | --- |
-| Cmd/Ctrl + F | focus sur la recherche |
-| Entrée / Maj + Entrée | résultat suivant / précédent |
-| Flèches haut / bas | commit précédent / suivant |
-| Entrée | ouvrir le commit sélectionné |
-| Cmd/Ctrl + clic | comparer avec le commit sélectionné |
-| Échap | fermer menu, boîte de dialogue ou recherche |
+## Commands
 
-## Sécurité
+- `gitgraph` starts the server for the current repository on `http://127.0.0.1:4777`.
+- `gitgraph --repo /path/to/repo` opens another repository.
+- `gitgraph --port 4888` picks another port. The `GITGRAPH_PORT` variable also sets the default port.
+- `gitgraph init` adds the **Git Graph** script to `t3.json`, or merges it into the existing file. You can run it again safely.
+- `gitgraph init --global-snippet` prints the configuration to copy into T3's default scripts.
+- `gitgraph doctor` checks the local installation and exits with code 1 if a check fails.
+- `gitgraph compat --online` checks the installed T3 bundle and its public schema. Add `--json` for structured output.
+- `gitgraph --version` prints the version. `gitgraph help` prints the help.
 
-- Écoute uniquement sur la boucle locale (`127.0.0.1`).
-- Contrôle des en-têtes `Host` et `Origin` (anti DNS rebinding / CSRF).
-- Jeton de session injecté dans la page et stocké dans `~/.config/gitgraph-t3/instance.json` (mode `0600`, dossier `0700`; `$XDG_CONFIG_HOME` respecté).
-- git est lancé sans shell (arguments passés en tableau).
+## Keyboard shortcuts
 
-## Intégration MCP (optionnel)
+- **Cmd/Ctrl + F** opens search.
+- **Enter**, then **Shift + Enter**, moves to the next or previous search result.
+- **Up / Down arrow** selects the previous or next commit.
+- **Enter** opens the selected commit.
+- **Cmd/Ctrl + click** compares a commit with the selected one.
+- **Escape** closes the menu, the dialog or the search.
 
-Voir [docs/mcp.md](docs/mcp.md).
+## Security
 
-## Dépannage
+- Listens on the loopback interface only (`127.0.0.1`).
+- Checks the `Host` and `Origin` headers (protection against DNS rebinding and CSRF).
+- A session token is injected into the page and stored in `~/.config/gitgraph-t3/instance.json` (mode `0600`, folder `0700`; `$XDG_CONFIG_HOME` is respected).
+- git runs without a shell (arguments passed as an array).
 
-Commencer par `gitgraph doctor`.
+## MCP integration
 
-- **Port occupé** : un autre service utilise 4777. Changer avec `--port` / `GITGRAPH_PORT` (et mettre le même port dans `previewUrl`). Si c'est un autre `gitgraph`, c'est normal : le dépôt est enregistré auprès de lui.
-- **Le Preview ne s'ouvre pas** : vérifier que le script a été importé, que `previewUrl` et `autoOpenPreview` sont présents, que T3 est le build **desktop**, et que `gitgraph` est dans le `PATH` du terminal de T3 (`which gitgraph`).
-- **`gitgraph: command not found` sous Ubuntu** : le préfixe npm n'est pas dans le `PATH` (voir installation), ou ouvrir un nouveau terminal.
-- **Linux, rafraîchissement lent ou erreur inotify** : l'arbre de travail est vérifié par polling toutes les 2 s (volontaire sur Linux). Si `ENOSPC` apparaît, augmenter la limite : `sudo sysctl fs.inotify.max_user_watches=524288` (persistant via `/etc/sysctl.d/`).
-- **`dist` manquant** : lancer `npm install` ou `npm run build`.
-- **T3 nightly a changé** : lancer `gitgraph compat --online`. Cette commande lit le bundle de T3 Code installé (`app.asar`, en lecture seule) et le schéma public `t3.json`, puis vérifie que `previewUrl` et `autoOpenPreview` sont toujours pris en charge. Au démarrage, `gitgraph` affiche aussi un avertissement s'il détecte une incompatibilité. En attendant un correctif, ouvrir `http://127.0.0.1:4777` à la main dans le Preview ou un navigateur. Pour adapter l'outil, suivre [AGENTS.md](AGENTS.md). Voir aussi [docs/t3-settings.md](docs/t3-settings.md).
-- **Bundle T3 introuvable** (fréquent sous Ubuntu avec l'AppImage, montée seulement pendant que T3 tourne) : lancer la vérification avec T3 ouvert, ou indiquer le chemin avec `GITGRAPH_T3_ASAR=/chemin/vers/app.asar`.
+The optional `gitgraph-mcp` server gives agents access to the graph, diffs and Git actions over stdio. It works without starting the web server. See the [MCP setup guide](docs/mcp.md) (in French) to add it to your agent.
 
-## Développement
+## Troubleshooting
+
+Start with `gitgraph doctor`.
+
+- **Port in use**: another service uses 4777. Change it with `--port` / `GITGRAPH_PORT` (and use the same port in `previewUrl`). If it is another `gitgraph`, this is expected: the repository is registered with it.
+- **The Preview does not open**: check that the script was imported, that `previewUrl` and `autoOpenPreview` are present, that T3 is the **desktop** build, and that `gitgraph` is on the `PATH` of T3's terminal (`which gitgraph`).
+- **`gitgraph: command not found` on Ubuntu**: the npm prefix is not on the `PATH` (see installation), or open a new terminal.
+- **Linux, slow refresh or inotify error**: the working tree is polled every 2 s (by design on Linux). If `ENOSPC` appears, raise the limit: `sudo sysctl fs.inotify.max_user_watches=524288` (persistent through `/etc/sysctl.d/`).
+- **Missing `dist`**: run `npm install` or `npm run build`.
+- **T3 nightly changed**: run `gitgraph compat --online`. This command reads the installed T3 Code bundle (`app.asar`, read-only) and the public `t3.json` schema, then checks that `previewUrl` and `autoOpenPreview` are still supported. On startup, `gitgraph` also prints a warning if it detects an incompatibility. Until a fix lands, open `http://127.0.0.1:4777` by hand in the Preview or a browser. To adapt the tool, follow [AGENTS.md](AGENTS.md). See also [docs/t3-settings.md](docs/t3-settings.md).
+- **T3 bundle not found** (common on Ubuntu with the AppImage, which is only mounted while T3 runs): run the check with T3 open, or give the path with `GITGRAPH_T3_ASAR=/path/to/app.asar`.
+
+## Development
 
 ```sh
-npm run dev:server   # API sur :4777, redémarre à chaque changement
-npm run dev:web      # UI sur :5173 (hot reload), proxy vers l'API
+npm run dev:server   # API on :4777, restarts on every change
+npm run dev:web      # UI on :5173 (hot reload), proxied to the API
 npm run typecheck
 npm test
 npm run build
-npm run pack:check   # contenu du paquet : bin + dist uniquement
-scripts/test-linux.sh   # Ubuntu 22.04 et 24.04 dans Docker
+npm run pack:check   # package contents: bin + dist only
+scripts/test-linux.sh   # Ubuntu 22.04 and 24.04 in Docker
 ```
 
-La CI (`.github/workflows/ci.yml`) exécute typecheck, tests, build et un smoke test sur Ubuntu 22.04/24.04 et macOS, Node 20 et 22.
+The README demo (`assets/demo.webp`) and the promo video are generated from [`video/promo.html`](video/promo.html): `node video/render.mjs --webp assets/demo.webp` or `node video/render.mjs` for the MP4. Rendering needs `playwright-core`, plus `img2webp` or `ffmpeg`.
 
-Une seconde CI (`.github/workflows/t3-compat.yml`) tourne chaque jour et échoue si le schéma public de T3 Code ne déclare plus `previewUrl` ou `autoOpenPreview`. La procédure de mise à jour, destinée aux humains comme aux agents, est décrite dans [AGENTS.md](AGENTS.md).
+CI (`.github/workflows/ci.yml`) runs typecheck, tests, build and a smoke test on Ubuntu 22.04/24.04 and macOS, with Node 20 and 22.
 
-## Licence et crédits
+The T3 compatibility workflow (`.github/workflows/t3-compat.yml`) runs daily and fails if T3 Code's public schema no longer declares `previewUrl` or `autoOpenPreview`. The update procedure, for humans and agents alike, is described in [AGENTS.md](AGENTS.md).
 
-[MIT](LICENSE) © 2026 Jean-Baptiste Sainte-Beuve. L'algorithme de placement du graphe est une implémentation
-originale, inspirée de l'article de Pierre Vigier sur le dessin de graphes git. Aucun code de l'extension
-vscode-git-graph de mhutchie n'est utilisé (sa licence interdit la redistribution d'œuvres dérivées).
+The [Secret scan](.github/workflows/secrets.yml) workflow runs Gitleaks on every push and pull request. `.gitignore` excludes `.env` files, `.npmrc` and common private key formats.
+
+## License and credits
+
+[MIT](LICENSE) © 2026 Jean-Baptiste Sainte-Beuve. The graph layout algorithm is an original implementation,
+inspired by Pierre Vigier's article on drawing git graphs. No code from mhutchie's vscode-git-graph extension is
+used (its license forbids redistributing derivative works).
