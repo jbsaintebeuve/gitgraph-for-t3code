@@ -1,0 +1,24 @@
+name: T3 Code compatibility
+
+# T3 Code ships nightly. This job fails as soon as the public t3.json schema stops declaring
+# the script fields gitgraph relies on (previewUrl, autoOpenPreview). GitHub emails the
+# workflow owner on failure; then follow AGENTS.md.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node bin/gitgraph.js compat --online

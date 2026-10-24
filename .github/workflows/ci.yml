@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, macos-latest]
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Package contents
+        run: npm pack --dry-run
+      - name: Smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global user.email ci@example.com
+          git config --global user.name CI
+          REPO=$(mktemp -d)
+          git -C "$REPO" init -q
+          git -C "$REPO" commit -q --allow-empty -m init
+          node bin/gitgraph.js --version
+          node bin/gitgraph.js --repo "$REPO" --port 4777 > "$RUNNER_TEMP/gitgraph.log" 2>&1 &
+          PID=$!
+          trap 'kill $PID 2>/dev/null || true' EXIT
+          for _ in $(seq 1 50); do curl -fs http://127.0.0.1:4777/api/ping >/dev/null && break; sleep 0.2; done
+          curl -fs http://127.0.0.1:4777/api/ping | grep -q gitgraph-t3
+          curl -fs http://127.0.0.1:4777/ | grep -qi token
+          node bin/gitgraph.js doctor
+          cat "$RUNNER_TEMP/gitgraph.log"

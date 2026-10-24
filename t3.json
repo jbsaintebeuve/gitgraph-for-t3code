@@ -1,0 +1,13 @@
+{
+  "$schema": "https://t3.codes/schema/t3.json",
+  "iconPath": "assets/icon.svg",
+  "scripts": [
+    {
+      "name": "Git Graph",
+      "command": "gitgraph --repo .",
+      "icon": "debug",
+      "previewUrl": "http://127.0.0.1:4777",
+      "autoOpenPreview": true
+    }
+  ]
+}
