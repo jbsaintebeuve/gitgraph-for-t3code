@@ -2,3 +2,25 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+.npmrc
+
+# Private keys and key stores
+*.key
+*.pem
+*.p12
+*.pfx
+*.p8
+id_rsa
+id_rsa.*
+id_dsa
+id_dsa.*
+id_ecdsa
+id_ecdsa.*
+id_ed25519
+id_ed25519.*
